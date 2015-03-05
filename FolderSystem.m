@@ -15,6 +15,7 @@ classdef FolderSystem
         crossValidationFolderName = 'crossValidationTestImages';
         neuralModelFolderName = 'neuralModels'
         sumCSVFolderName = 'sumCSV'
+        errorValueLogFolderName = 'errorValueLogs'
         
         subjectFolderBaseName = 'Subject';
         subjectTrainImagesFolderName = 'IMAGES'
@@ -41,6 +42,7 @@ classdef FolderSystem
             obj.numberOfSubjects = varargin{2};
         end
         
+        
         function AddSpeakersInformation(obj, numberOfSpeakers, speakerSubjectMatrix)
             if size(speakerSubjectMatrix,1) >= numberOfSpeakers && obj.numberOfSubjects == speakerSubjectMatrix(numberOfSpeakers,2)
                 obj.numberOfSpeakers = numberOfSpeakers;
@@ -56,6 +58,11 @@ classdef FolderSystem
         
         function speakerSubjectMatrix = GetSpeakerSubjectMatrix(obj)
             speakerSubjectMatrix = obj.speakerSubjectMatrix;
+        end
+        
+        function errorValueLogFolderPath = GetErrorValueLogPath(obj)
+            baseFolderPathf = GetBaseFolderPath(obj);
+            errorValueLogFolderPath = strcat(baseFolderPathf, '\', obj.errorValueLogFolderName);
         end
         
         function sumCSVFolderPath = GetSumCSVFolderPath(obj)
@@ -150,6 +157,7 @@ classdef FolderSystem
         end
         
         function InitializeFolderSystem(obj)
+            
             mkdir(obj.baseFolderPath, obj.trainDataFolderName);
             mkdir(obj.baseFolderPath, obj.basicImagesFolderName);
             mkdir(obj.baseFolderPath, obj.convertedImagesFolderName);
@@ -158,6 +166,7 @@ classdef FolderSystem
             mkdir(obj.baseFolderPath, obj.crossValidationFolderName);
             mkdir(obj.baseFolderPath, obj.neuralModelFolderName);
             mkdir(obj.baseFolderPath, obj.sumCSVFolderName);
+            mkdir(obj.baseFolderPath, obj.errorValueLogFolderName);
             
             CreateTsFileDirectory(obj);
             CreateTrainFileDirectory(obj);

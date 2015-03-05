@@ -18,7 +18,7 @@ function [ output_args ] = IterativeLearning()
 
         %- ez menjen a mondatok 50-70-X % -ig.
     
-    %--------INIT----------%
+    %--------INIT FILE SYSTEM----------%
     numberOfSubjects = 17;     
     baseFolderPath = 'C:\ubuntueswin\FolderSystem'; 
     numberOfSpeakers = 2;
@@ -28,28 +28,54 @@ function [ output_args ] = IterativeLearning()
     ColdStartTrainingData = [1 2]; % Elsõ ciklusban tanításhoz felhasznált subjectek számai
     SubjectsPercentageForTraining = 80;
     
+    %---------INIT ErrorLog File----------%
+    fileHeader = GenerateErrorLogHeader();
+    errorValueLogName = sprintf('ErrorValue_%s.txt',datestr(now));
+    errorValueFilePath = strcat(SystemFolder.GetErrorValueLogPath(),'\',errorValueLogName);
+    errorValueFileId = fopen(errorValueFilePath,'w');
+    WriteRowToFile(errorValueFileId, fileHeader);
+    fclose(errorValueFileId);
     
     %------------ITERATION----------------%
     TestData = DetermineTrainingOrTestVector(SystemFolder, selectedSpeakerNumber, ColdStartTrainingData);
     TrainData = ColdStartTrainingData;
     
-    %Megadja az iterációk számát x% mellett
+    % Gives iteration number from test array percentage (e.g. 100% of the test array should be train data at the end of the iteration)
     iterationNumber = GetIterationNumberForSpeaker(SystemFolder, SubjectsPercentageForTraining, selectedSpeakerNumber, ColdStartTrainingData);
     
-    for iteration = 0 : iterationNumber
+    plusTrainerSubject = 0;
+    
+    for iteration = 1 : iterationNumber+1      
         %Elkészül a modell, megtörténik a tracing
         PreparationForErrorEval( SystemFolder, TrainData, TestData, iteration);
-        % ErrorEvaluation for modell
-        [RMSE_MODEL_AVERAGE, rmseArrayModel] = RunErrorEvaluation( SystemFolder, 2, SelectedSubject);
-        [AREA_MODEL_AVERAGE, areaArrayModel] = RunErrorEvaluation( SystemFolder, 4, SelectedSubject);
-        [TER_MODEL_AVERAGE, terArrayModel] = RunErrorEvaluation( SystemFolder, 6, SelectedSubject);
+        % ErrorEvaluation for model 0 - selected subject - dont care
+        [RMSE_MODEL_AVERAGE, rmseArrayModel] = RunErrorEvaluation( SystemFolder, 2, 0);
+        [AREA_MODEL_AVERAGE, areaArrayModel] = RunErrorEvaluation( SystemFolder, 4, 0);
+        [TER_MODEL_AVERAGE, terArrayModel] = RunErrorEvaluation( SystemFolder, 6, 0);
         
         %TODO: SAVE TO FILE THE AVERAGE ERROR VALUES WITH THE ITERATION FLAG
+        
+        % File format:
+        % ITERATION(Model) ---- RMSE-----AREA----INSERTION----DELETION----SUBSTITUTION------PlusSubject
+        % 1-----6.544-------1300-------0.1------0.1----------0.6---------1,2,3
+        % 2------6.44--------1200--------0.5------0.6---------0.2----------12
+        
+        %--------SAVE ERROR VALUE TO TXT FILE IN EVERY ITERATION------------
+        if iteration == 1
+            BaseOrSelectedSubject = ColdStartTrainingData;
+        else
+            BaseOrSelectedSubject = plusTrainerSubject;
+        end
+        
+        %Create and write to file the error row
+        errorValueRow = GenerateErrorValueRow(RMSE_MODEL_AVERAGE, AREA_MODEL_AVERAGE, TER_MODEL_AVERAGE, BaseOrSelectedSubject, iteration);
+        errorValueFileId = fopen(errorValueFilePath,'w');
+        WriteRowToFile(errorValueFileId, errorValueRow);
+        fclose(errorValueFileId);
         
         %Select the plus one subject ID for the next iteration's train array
         plusTrainerSubject = SelectPlusOneTrainerSubject(SystemFolder, TestData);
         
-        %TrainerDatához hozzáadni, TestDatából kivenni... TODO
         newTrainData = PutInSelectedSubjectToTrain(TrainData, selectedSubjectId);
         newTestData = TakeOffSelectedSubjectFromTest(TestData, selectedSubjectId);
         
@@ -58,6 +84,25 @@ function [ output_args ] = IterativeLearning()
         
     end
     
+end
+
+function row = GenerateErrorValueRow(RMSE, AREA, TER, BaseOrSelectedSubject, iterationNumber)
+    row = [cellstr(num2str(iterationNumber)), cellstr(num2str(RMSE)),...
+        cellstr(num2str(AREA)),cellstr(num2str(TER(1))), ...
+        cellstr(num2str(TER(2))), cellstr(num2str(TER(3))),...
+        cellstr(num2str(BaseOrSelectedSubject))];
+end
+
+function WriteRowToFile(fileId, fileRowData)
+    itemsNum = length(fileRowData);
+    for i = 1 : itemsNum
+        fprintf(fileId,['%s','\t'],fileRowData{1,i});
+    end
+    fprintf(fileId, '\n');
+end
+
+function fileHeader = GenerateErrorLogHeader()
+    fileHeader = {'Iteration(Model)', 'RMSE', 'AREA', 'INS', 'DEL', 'SUBS', 'PlusSubjId'};
 end
 
 function newTrainData = PutInSelectedSubjectToTrain(oldTrainData, selectedSubjectId)
@@ -109,17 +154,15 @@ function plusTrainerSubject = SelectPlusOneTrainerSubject(SystemFolder, TestData
         plusTrainerSubject = RMSE_MAX_SUBJECT;
     else
         % if not all of the three error_subject equal select the XYZ error_subject        % subject
-        plusTrainerSubject = RMSE_MAX_SUBJECT;
+        plusTrainerSubject = AREA_MAX_SUBJECT;
     end    
 end
-
 
 function iterationNumber = GetIterationNumberForSpeaker(SystemFolder, percentageValue, selectedSpeakerNumber, ColdStartTrainingData)
     speakerSubjectNumber = GetSpeakerSubjectNumbers(SystemFolder.GetSpeakerSubjectMatrix(), selectedSpeakerNumber);
     subjectsForSpeaker = GenerateSubjectNumberList(speakerSubjectNumber);
     iterationNumber = floor((size(subjectsForSpeaker,2) - size(ColdStartTrainingData,2))*(percentageValue/100));
 end
-
 
 function vectorB = DetermineTrainingOrTestVector(SystemFolder, selectedSpeakerNumber, vectorA)
     vectorB = [];
