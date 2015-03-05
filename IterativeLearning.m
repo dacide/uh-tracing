@@ -3,7 +3,7 @@ function [ output_args ] = IterativeLearning()
     % Fícsörök:
         % - Kiválasztható melyik userre fusson az iteratív tanítás, ha több
         % speaker van egyszerre jelen a libraryben (és csakis egy userre lehet iteratív tanítani)
-
+%fasza
 
 
     % TODO: iteratív tanítóadat növelés:
