@@ -46,28 +46,44 @@ function [ output_args ] = IterativeLearning()
         
         %TODO: SAVE TO FILE THE AVERAGE ERROR VALUES WITH THE ITERATION FLAG
         
-        %Kiválasztjuk azt a subjectet amit hozzárakunk a trainer vektorhoz
+        %Select the plus one subject ID for the next iteration's train array
         plusTrainerSubject = SelectPlusOneTrainerSubject(SystemFolder, TestData);
         
         %TrainerDatához hozzáadni, TestDatából kivenni... TODO
+        newTrainData = PutInSelectedSubjectToTrain(TrainData, selectedSubjectId);
+        newTestData = TakeOffSelectedSubjectFromTest(TestData, selectedSubjectId);
+        
+        TrainData = newTrainData;
+        TestData = newTestData;
         
     end
     
 end
 
-% Legroszabbul teljesítõ subjectet kell hozzáadni a trainhez
+function newTrainData = PutInSelectedSubjectToTrain(oldTrainData, selectedSubjectId)
+    newTrainData = [oldTrainData, selectedSubjectId];
+end
+
+function newTestData = TakeOffSelectedSubjectFromTest(oldTestData, selectedSubjectId)
+    % gets rid of all cases where a is exactly equal to selectedSubjectId
+    newTestData = oldTestData(oldTestData~=selectedSubjectId);
+end
+
+% Select the plus one subject ID for the next iteration's train array
 function plusTrainerSubject = SelectPlusOneTrainerSubject(SystemFolder, TestData)
     RMSE_MAX = 0;
     AREA_MAX = 0;
+    TER_MAX = [0,0,0]; % Insertion, Deletion, Substitution
     RMSE_MAX_SUBJECT = 0;
     AREA_MAX_SUBJECT = 0;
-    % TER-nél mit nézzek ? kisebb nagyobb ? SUBS-nál minél kisebb annál
-    % jobb. insertion - kisebb jobb ; deletion - kisebb jobb
+    TER_MAX_SUBJECT = 0;
     
-    %Subjectek közül melyiket adjuk hozzá a trainhez???
+    %plusTrainerSubj. default value
+    plusTrainerSubject = TestData(1);
+    
     for subjectNumber = 1 : size(TestData,2)
         SelectedSubject = TestData(subjectNumber);
-        disp('Subject hibáinak vizsgálata: ',SelectedSubject); % hiba
+        disp(strcat('Examined subject: ',SelectedSubject));
         %RMSE subj
        [RMSE_AVERAGE, rmseArray] = RunErrorEvaluation( SystemFolder, 1, SelectedSubject);
        %AREA subj
@@ -82,19 +98,19 @@ function plusTrainerSubject = SelectPlusOneTrainerSubject(SystemFolder, TestData
        if ARREA_AVERAGE > AREA_MAX
            AREA_MAX_SUBJECT = SelectedSubject;
        end
-       ... % TODO : TER-re is hasonlóan megcsinálni
+       
+       if  all(TER_AVERAGE > TER_MAX) % only if every value is higher than TER_MAX
+           TER_MAX_SUBJECT = SelectedSubject;
+       end  
     end
     
-    %valami alapján ki kéne választani, megvan a legrosszabb RMSE;AREA;TER
-    %subjectek, lehet hogy nem egyeznek, lehet hogy minde különbözõ.. mi
-    %alapján válasszunk ?
-    %TODO Tamás válasza alapján
-    if RMSE_MAX_SUBJECT == 0
-        plusTrainerSubject = TestData(1);
-    else
+    if RMSE_MAX_SUBJECT == AREA_MAX_SUBJECT && AREA_MAX_SUBJECT == TER_MAX_SUBJECT
+        %all of them ar equal
         plusTrainerSubject = RMSE_MAX_SUBJECT;
-    end
-    
+    else
+        % if not all of the three error_subject equal select the XYZ error_subject        % subject
+        plusTrainerSubject = RMSE_MAX_SUBJECT;
+    end    
 end
 
 
