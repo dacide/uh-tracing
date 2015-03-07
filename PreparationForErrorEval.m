@@ -1,8 +1,8 @@
 function PreparationForErrorEval( SystemFolder, trainArray, testArray, cycleNumber)
     
+    NeuralModelFolderPath = 'C:\ubuntueswin\Autotrace-master\old\savefiles';
     DeleteTrainAndTestFiles(SystemFolder);
-    %DeleteCrossValidationTestImages( SystemFolder ); % Nem töröljük õket
-    %mert oda mentõdik le a tracing eredménye!!!
+    DeleteCrossValidationTestImages( SystemFolder );
     FusionCSVFilesV2( SystemFolder, trainArray, testArray);
     FusionROIFilesForAllSubject(SystemFolder);
     
@@ -20,7 +20,7 @@ function PreparationForErrorEval( SystemFolder, trainArray, testArray, cycleNumb
     ReplaceNeuralModel(SystemFolder, cycleNumber, NeuralModelFolderPath);
     
     %----Get data for AutoTrace.m----
-    neuralModelNthFolderPath = SystemFolder.GetNeuralModelNthFolderPath(foldNumber);
+    neuralModelNthFolderPath = SystemFolder.GetNeuralModelNthFolderPath(cycleNumber);
     networkFileName = StringPlusNumber('network', '.mat', cycleNumber);
     networkFile = strcat(neuralModelNthFolderPath, '\', networkFileName);
     
