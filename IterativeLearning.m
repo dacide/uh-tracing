@@ -1,14 +1,14 @@
 function IterativeLearning()
         
     %--------INIT FILE SYSTEM----------%
-    numberOfSubjects = 17;     
-    baseFolderPath = 'C:\ubuntueswin\FolderSystem'; 
-    numberOfSpeakers = 2;
-    speakerSubjectMatrix = [1 8; 9 17];     % egy sor tartalmazza az n. speaker kezdõ és vég subject számát       
+    numberOfSubjects = 17;                                      %REWRITE
+    baseFolderPath = 'C:\ubuntueswin\FolderSystem';              %REWRITE
+    numberOfSpeakers = 2;                                         %REWRITE
+    speakerSubjectMatrix = [1 8; 9 17];     % egy sor tartalmazza az n. speaker kezdõ és vég subject számát                  %REWRITE    
     SystemFolder = FolderSystem(baseFolderPath, numberOfSubjects, numberOfSpeakers, speakerSubjectMatrix);   
-    selectedSpeakerNumber = 2;  % Kiválasztott beszélõ száma. Egyszerre több is szerepelhet a rendszerben, de a kiválasztás után a többivel nem foglalkozunk.    
-    ColdStartTrainingData = [9,10]; % Elsõ ciklusban tanításhoz felhasznált subjectek számai
-    SubjectsPercentageForTraining = 80;
+    selectedSpeakerNumber = 2;  % Kiválasztott beszélõ száma. Egyszerre több is szerepelhet a rendszerben, de a kiválasztás után a többivel nem foglalkozunk.     %REWRITE
+    ColdStartTrainingData = [9,10]; % Elsõ ciklusban tanításhoz felhasznált subjectek számai         %REWRITE
+    SubjectsPercentageForTraining = 80;              %REWRITE
     
     %---------INIT ErrorLog File----------%
     fileHeader = GenerateErrorLogHeader();
