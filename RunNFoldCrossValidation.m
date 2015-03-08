@@ -52,7 +52,6 @@ function [] = RunNFoldCrossValidation(SystemFolder, trainArray, testArray,number
         directory = SystemFolder.GetCrossValNthFolderPath(foldNumber);
         
         [xs, ys] = AutoTracer(directory, roi, networkFile);
-        %somehow save these two cucc
 
     end
     
