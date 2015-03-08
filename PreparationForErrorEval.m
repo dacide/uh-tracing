@@ -15,7 +15,10 @@ function PreparationForErrorEval( SystemFolder, trainArray, testArray, cycleNumb
        
     fclose('all');
     
-    ReplaceTestImages(SystemFolder, cycleNumber);
+    %1 because the RunErrorEvaluation only supports nfold cross
+    %validation. 1 means the first fold. It uses a side effect of the nfold
+    %code. Because of this, we have to delete CrossValidationTestImages.
+    ReplaceTestImages(SystemFolder, 1);
         
     ReplaceNeuralModel(SystemFolder, cycleNumber, NeuralModelFolderPath);
     
@@ -24,7 +27,7 @@ function PreparationForErrorEval( SystemFolder, trainArray, testArray, cycleNumb
     networkFileName = StringPlusNumber('network', '.mat', cycleNumber);
     networkFile = strcat(neuralModelNthFolderPath, '\', networkFileName);
     
-    directory = SystemFolder.GetCrossValNthFolderPath(cycleNumber);
+    directory = SystemFolder.GetCrossValNthFolderPath(1);
     
     [xs, ys] = AutoTracer(directory, roi, networkFile);
     

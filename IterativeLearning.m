@@ -6,8 +6,8 @@ function IterativeLearning()
     numberOfSpeakers = 2;
     speakerSubjectMatrix = [1 8; 9 17];     % egy sor tartalmazza az n. speaker kezdõ és vég subject számát       
     SystemFolder = FolderSystem(baseFolderPath, numberOfSubjects, numberOfSpeakers, speakerSubjectMatrix);   
-    selectedSpeakerNumber = 1;  % Kiválasztott beszélõ száma. Egyszerre több is szerepelhet a rendszerben, de a kiválasztás után a többivel nem foglalkozunk.    
-    ColdStartTrainingData = [1 2]; % Elsõ ciklusban tanításhoz felhasznált subjectek számai
+    selectedSpeakerNumber = 2;  % Kiválasztott beszélõ száma. Egyszerre több is szerepelhet a rendszerben, de a kiválasztás után a többivel nem foglalkozunk.    
+    ColdStartTrainingData = [9,10]; % Elsõ ciklusban tanításhoz felhasznált subjectek számai
     SubjectsPercentageForTraining = 80;
     
     %---------INIT ErrorLog File----------%
@@ -22,7 +22,8 @@ function IterativeLearning()
     TestData = DetermineTrainingOrTestVector(SystemFolder, selectedSpeakerNumber, ColdStartTrainingData);
     TrainData = ColdStartTrainingData;
     
-    % Gives iteration number from test array percentage (e.g. 100% of the test array should be train data at the end of the iterations)
+    % Gives iteration number from test array percentage (e.g. 80% of the test array should be train data at the end of the iterations)
+    % DO NOT give 100% , because there wont be any test data at the end!!
     iterationNumber = GetIterationNumberForSpeaker(SystemFolder, SubjectsPercentageForTraining, selectedSpeakerNumber, ColdStartTrainingData);
     
     plusTrainerSubject = 0;
@@ -100,7 +101,7 @@ function plusTrainerSubject = IterateOnTestSubjects(SystemFolder, TestData, iter
     
     for subjectNumber = 1 : size(TestData,2)
        SelectedSubject = TestData(subjectNumber);
-       disp(strcat('Examined subject: ',SelectedSubject));
+       disp(strcat('Examined subject: ',num2str(SelectedSubject)));
        
        %RMSE subj
        [RMSE_AVERAGE, rmseArray] = RunErrorEvaluation( SystemFolder,0, 1, SelectedSubject);
