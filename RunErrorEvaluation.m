@@ -1,13 +1,19 @@
 function [strategyAverageError, errorArray] = RunErrorEvaluation( varargin )
-    % SystemFolder, SelectedStrategy, SelectedSubjectNumber
+    % SystemFolder,TestSubjectIds, SelectedStrategy, SelectedSubjectNumber
     % 1- RMSE SUBJ; 2- RMSE MOD; 3- AREA SUBJ; 4- AREA MOD; 5- TER SUBJ;
     % 6- TER MOD;
-    SystemFolder = varargin{1};
-    if nargin == 1
+    if nargin == 1  % Call function (1 argument) to run only ONESubject evaluation; interaction mode
+        SystemFolder = varargin{1};
         [selectedStrategy, selectedSubjectNumber] = SelectStrategy(SystemFolder);
-    elseif nargin == 3
-        selectedStrategy = varargin{2};
-        selectedSubjectNumber = varargin{3};
+    elseif nargin == 2 % Call function (2 arguments) to run ONESubject OR Model evaluation; interaction mode
+        SystemFolder = varargin{1};
+        testSubjectIds = varargin{2};
+        [selectedStrategy, selectedSubjectNumber] = SelectStrategy(SystemFolder);
+    elseif nargin == 4  % Call function (4 arguments) to run ONESubject OR Model evaluation; non-interaction mode
+        SystemFolder = varargin{1};
+        testSubjectIds = varargin{2};
+        selectedStrategy = varargin{3};
+        selectedSubjectNumber = varargin{4};
     end
     
     strategyAverageError = 0;
@@ -18,7 +24,7 @@ function [strategyAverageError, errorArray] = RunErrorEvaluation( varargin )
         disp(strcat('Average RMSE on full fold One Subject: ',num2str(strategyAverageError)));
     elseif selectedStrategy == 2        
         % Calculate RMSE for a modell with all folds
-        [strategyAverageError, errorArray] = GetErrorValueForModel(SystemFolder, selectedStrategy);
+        [strategyAverageError, errorArray] = GetErrorValueForModel(SystemFolder, selectedStrategy,testSubjectIds);
         disp(strcat('Average RMSE on full fold on model: ',num2str(strategyAverageError)));
     elseif selectedStrategy == 3
         % Calculate AREA between train and manual lines (point connected
@@ -28,7 +34,7 @@ function [strategyAverageError, errorArray] = RunErrorEvaluation( varargin )
     elseif selectedStrategy == 4
         % Calculate AREA between train and manual lines (point connected
         % with line) MODEL
-         [strategyAverageError, errorArray] = GetErrorValueForModel(SystemFolder, selectedStrategy);
+         [strategyAverageError, errorArray] = GetErrorValueForModel(SystemFolder, selectedStrategy, testSubjectIds);
         disp(strcat('Average Area on full fold on model: ',num2str(strategyAverageError)));
     elseif selectedStrategy == 5
         % Calculate TER (Insertion, Deletion, Substitution) for ONE SUBJECT
@@ -37,32 +43,32 @@ function [strategyAverageError, errorArray] = RunErrorEvaluation( varargin )
         strategyAverageError = averageTER;
     elseif selectedStrategy == 6
         % Calculate TER (Insertion, Deletion, Substitution) for MODEL
-        [averageTER, TER] = GetTERValueForModel(SystemFolder, selectedStrategy);
+        [averageTER, TER] = GetTERValueForModel(SystemFolder, selectedStrategy,testSubjectIds);
         errorArray = TER;
         strategyAverageError = averageTER;
     end
 end
 
 
-function [strategyAverageError, errorArray] = GetErrorValueForModel(SystemFolder, selectedStrategy)
-     subjectNumber = SystemFolder.GetNumberOfSubject();
+function [strategyAverageError, errorArray] = GetErrorValueForModel(SystemFolder, selectedStrategy, testSubjectIds)
      sumError = 0;
-     for i = 1 : subjectNumber
-        [foldAverageError, errorArray] = GetErrorValueForOneSubject(SystemFolder, i, selectedStrategy);
+     for i = 1 : length(testSubjectIds);
+        selectedSubjectId = testSubjectIds(i);
+        [foldAverageError, errorArray] = GetErrorValueForOneSubject(SystemFolder, selectedSubjectId, selectedStrategy);
         disp(strcat('Average RMSE on full fold: ',num2str(foldAverageError)));
         sumError = sumError + foldAverageError;
      end
-     strategyAverageError = sumError/subjectNumber;
+     strategyAverageError = sumError/length(testSubjectIds);
 end
 
-function [averageTER, TER] = GetTERValueForModel(SystemFolder, selectedStrategy)
-    subjectNumber = SystemFolder.GetNumberOfSubject();
+function [averageTER, TER] = GetTERValueForModel(SystemFolder, selectedStrategy, testSubjectIds)
     sumTER = 0;
-    for i = 1 : subjectNumber
-        [averTER, TER] = GetTERValueForOneSubject(SystemFolder, selectedSubjectNumber, selectedStrategy);
+    for i = 1 : length(testSubjectIds)
+        selectedSubjectId = testSubjectIds(i);
+        [averTER, TER] = GetTERValueForOneSubject(SystemFolder, selectedSubjectId, selectedStrategy);
         sumTER = sumTER + averTER;
     end
-    averageTER = sumTER/subjectNumber;
+    averageTER = sumTER/length(testSubjectIds);
 end
 
 function [averageTER, TER] = GetTERValueForOneSubject(SystemFolder, selectedSubjectNumber, selectedStrategy)
@@ -109,11 +115,11 @@ function [averageError, errorArray] = GetSubjectErrorInOneFold(SystemFolder, sel
         case 1
            [sumError, errorArray] = RMSELoop(txtNumber, fileNames, SystemFolder, nthFoldPath);
         case 2
-           sumError = RMSELoop(txtNumber, fileNames, SystemFolder, nthFoldPath);
+           [sumError, errorArray] = RMSELoop(txtNumber, fileNames, SystemFolder, nthFoldPath);
         case 3
            [sumError, errorArray] = AreaDifferenceLoop(txtNumber, fileNames, SystemFolder, nthFoldPath);
         case 4
-           sumError = AreaDifferenceLoop(txtNumber, fileNames, SystemFolder, nthFoldPath);
+           [sumError, errorArray] = AreaDifferenceLoop(txtNumber, fileNames, SystemFolder, nthFoldPath);
     end
     averageError = sumError/txtNumber;
 end
