@@ -9,7 +9,9 @@ public class ExecutePictureConverting {
 		System.out.println("Start");
 		
 		String blankFilePath = "C:/ubuntueswin/blank.jpg";
-		for(int j=1;j<=17;j++){
+		int numberOfSubjects = 17;
+		
+		for(int j=1;j<=numberOfSubjects;j++){
 			String subjectFolderName = "Subject"+j;
 			String folderPath = "C:/ubuntueswin/FolderSystem/basicImages/"+subjectFolderName+"/";
 			String saveFolder = "C:/ubuntueswin/FolderSystem/convertedImages/"+subjectFolderName+"/";
