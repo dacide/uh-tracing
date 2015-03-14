@@ -1,5 +1,5 @@
 function [strategyAverageError, errorArray] = RunErrorEvaluation( varargin )
-    % SystemFolder,TestSubjectIds, SelectedStrategy, SelectedSubjectNumber
+    % varargin : SystemFolder,TestSubjectIds, SelectedStrategy, SelectedSubjectNumber
     % 1- RMSE SUBJ; 2- RMSE MOD; 3- AREA SUBJ; 4- AREA MOD; 5- TER SUBJ;
     % 6- TER MOD;
     if nargin == 1  % Call function (1 argument) to run only ONESubject evaluation; interaction mode
@@ -41,11 +41,13 @@ function [strategyAverageError, errorArray] = RunErrorEvaluation( varargin )
         [averageTER, TER] = GetTERValueForOneSubject(SystemFolder, selectedSubjectNumber, selectedStrategy);
         errorArray = TER;
         strategyAverageError = averageTER;
+        disp(strcat('Average TER on full fold on One Subject: ',num2str(strategyAverageError)));
     elseif selectedStrategy == 6
         % Calculate TER (Insertion, Deletion, Substitution) for MODEL
         [averageTER, TER] = GetTERValueForModel(SystemFolder, selectedStrategy,testSubjectIds);
         errorArray = TER;
         strategyAverageError = averageTER;
+        disp(strcat('Average TER on full fold on model: ',num2str(strategyAverageError)));
     end
 end
 
@@ -127,50 +129,103 @@ end
 function [sumTER, TER] = TERLoop(txtNumber, fileNames, SystemFolder, nthFoldPath)
     sumTER = 0;
     TER = zeros(3,txtNumber);
+    prevSubjectNumber = 0;
+    subjectSumCSVPictureCoords = 0;
     for i = 1: txtNumber
         fileName = fileNames(i).name;
-        [originalCoords] = GetOriginalCoordsForFile(fileName, SystemFolder);
+        [nextSubjectNumber, imageName] = GetCSVLineInfromation(fileName);
+        imageNumber = GetImageNumber(imageName);
+        if nextSubjectNumber ~=  prevSubjectNumber
+            sumCSVPath = SystemFolder.GetSumCSVFolderPath();
+            csvFilePath = strcat(sumCSVPath, '\', 'Subject_',num2str(nextSubjectNumber),'.csv');
+            numberOfLines = GetNumberOfPicturesInCSVFile(csvFilePath);
+            %load to memory the sumCSV subject file image coords
+            subjectSumCSVPictureCoords = LoadSubjectSumCSV(csvFilePath, numberOfLines); % x,y;coords;image Id
+            prevSubjectNumber = nextSubjectNumber;     
+        end
+        originalCoords = subjectSumCSVPictureCoords(:,:,imageNumber);
+        %[originalCoords] = GetOriginalCoordsForFile(fileName, SystemFolder);
         [trainedCoords] = GetTrainedCoordsForFile(fileName, nthFoldPath);
-        imageName = GetImageName(fileName);
+        [imageName] = GetImageName(fileName);
         imagePath = strcat(nthFoldPath, '\', imageName);
         [ averageTer] = CalculateTERBetweenCoordArray( originalCoords, trainedCoords, imagePath );
         sumTER = sumTER + averageTer;
         TER(:,i) = averageTer;
-        disp(averageTer);
+        %disp(averageTer);
     end
 end
 
 function [sumError, errorArray] = AreaDifferenceLoop(txtNumber, fileNames, SystemFolder, nthFoldPath)
     sumError = 0;
     errorArray = zeros(1,txtNumber);
+    prevSubjectNumber = 0;
+    subjectSumCSVPictureCoords = 0;
     for i = 1 : txtNumber
         fileName = fileNames(i).name;
-        [originalCoords] = GetOriginalCoordsForFile(fileName, SystemFolder);
+        [nextSubjectNumber, imageName] = GetCSVLineInfromation(fileName);
+        imageNumber = GetImageNumber(imageName);
+        if nextSubjectNumber ~=  prevSubjectNumber
+            sumCSVPath = SystemFolder.GetSumCSVFolderPath();
+            csvFilePath = strcat(sumCSVPath, '\', 'Subject_',num2str(nextSubjectNumber),'.csv');
+            numberOfLines = GetNumberOfPicturesInCSVFile(csvFilePath);
+            %load to memory the sumCSV subject file image coords
+            subjectSumCSVPictureCoords = LoadSubjectSumCSV(csvFilePath, numberOfLines); % x,y;coords;image Id
+            prevSubjectNumber = nextSubjectNumber;     
+        end
+        originalCoords = subjectSumCSVPictureCoords(:,:,imageNumber);
+       % [originalCoords] = GetOriginalCoordsForFile(fileName, SystemFolder);
         [trainedCoords] = GetTrainedCoordsForFile(fileName, nthFoldPath);
-        imageName = GetImageName(fileName);
+        [imageName] = GetImageName(fileName);
         imagePath = strcat(nthFoldPath, '\', imageName);
         areaError = CalculateAreaDifferenceBetweenCoordArray( originalCoords, trainedCoords, imagePath );
         sumError = sumError + areaError;
         errorArray(i) = areaError;
-        disp(areaError);
+       % disp(areaError);
     end
 end
 
+% fileNames := txt traced data in nfoldCrossVal. folder
 function [sumError, errorArray] = RMSELoop(txtNumber, fileNames, SystemFolder, nthFoldPath)
     sumError = 0;
     errorArray = zeros(1,txtNumber);
+    prevSubjectNumber = 0;
+    subjectSumCSVPictureCoords = 0;
     for i = 1 : txtNumber
         fileName = fileNames(i).name;
-        [originalCoords] = GetOriginalCoordsForFile(fileName, SystemFolder);
-        [trainedCoords] = GetTrainedCoordsForFile(fileName, nthFoldPath);
-        imageName = GetImageName(fileName);
-        imagePath = strcat(nthFoldPath, '\', imageName);
+        [nextSubjectNumber, imageName] = GetCSVLineInfromation(fileName);
+        imageNumber = GetImageNumber(imageName);
+        if nextSubjectNumber ~=  prevSubjectNumber
+            sumCSVPath = SystemFolder.GetSumCSVFolderPath();
+            csvFilePath = strcat(sumCSVPath, '\', 'Subject_',num2str(nextSubjectNumber),'.csv');
+            numberOfLines = GetNumberOfPicturesInCSVFile(csvFilePath);
+            %load to memory the sumCSV subject file image coords
+            subjectSumCSVPictureCoords = LoadSubjectSumCSV(csvFilePath, numberOfLines); % x,y;coords;image Id
+            prevSubjectNumber = nextSubjectNumber;     
+        end
+        originalCoords = subjectSumCSVPictureCoords(:,:,imageNumber);
+     %  [originalCoords] = GetOriginalCoordsForFile(fileName, SystemFolder);
+        trainedCoords = GetTrainedCoordsForFile(fileName, nthFoldPath);
+        [imageName] = GetImageName(fileName);
+        imagePath = strcat(nthFoldPath, '\', imageName);   
 %        PrintTwoPointArray( originalCoords, trainedCoords, imagePath );
         RMSE = CalculateRMSEBetweenCoordArray( originalCoords, trainedCoords, imagePath );
         sumError = sumError + RMSE;
         errorArray(i) = RMSE;
-        disp(RMSE);
+        %disp(RMSE);
     end
+end
+
+function subjectSumCSVPictureCoords = LoadSubjectSumCSV(csvFilePath, numberOfLines)
+    subjectSumCSVPictureCoords = zeros(2,32,numberOfLines); % x,y;coords;image Id
+    fileId = OpenFile(csvFilePath);
+    readLine = fgetl(fileId); % skip header from csv
+    readLine = fgetl(fileId);
+    while ischar(readLine)
+        [lineCoords, imageNumber] = ConvertReadLineToCoords(readLine);
+        subjectSumCSVPictureCoords(:,:,imageNumber) = lineCoords;
+        readLine = fgetl(fileId);
+    end
+    fclose(fileId);
 end
 
 function [originalCoords] = GetOriginalCoordsForFile(fileName, SystemFolder)
@@ -199,7 +254,7 @@ function [lineCoords] = FindRowInCSVFile(csvFilePath, imageName)
         pictureNameCell = splitLine(1);
         pictureName = pictureNameCell{1,1};
         if strcmpi(pictureName, imageName)
-            [lineCoords] = ConvertReadLineToCoords(readLine);
+            [lineCoords, imageNumber] = ConvertReadLineToCoords(readLine);
             break;
         end
         readLine = fgetl(fileId);
@@ -207,10 +262,26 @@ function [lineCoords] = FindRowInCSVFile(csvFilePath, imageName)
     fclose(fileId);
 end
 
-function [coords] = ConvertReadLineToCoords(readLine)
+function numberOfLines = GetNumberOfPicturesInCSVFile(csvFilePath)
+    fid = fopen(csvFilePath, 'rb');
+    %# Get file size.
+    fseek(fid, 0, 'eof');
+    fileSize = ftell(fid);
+    frewind(fid);
+    %# Read the whole file.
+    data = fread(fid, fileSize, 'uint8');
+    
+    numberOfLines = sum(data == 10) -1; % -1 because of the CSV header  
+    fclose(fid);
+end
+
+function [coords, imageNumber] = ConvertReadLineToCoords(readLine)
     coords = zeros(2,32);
     split = strsplit(readLine, '\t');
-    for i = 2 : 65 % 64 = number of coords x + y
+    imageNameCell = split(1);
+    imageName = imageNameCell{1,1};
+    imageNumber = GetImageNumber(imageName);
+    for i = 2 : 65 % 64 = number of coords x & y
         cell = split(i);
         modul = mod(i,2);
         if modul == 0
@@ -240,6 +311,12 @@ function [imageName] = GetImageName(fileName)
     splitArray = strsplit(fileName, '.');
     imageCell = splitArray(1);
     imageName = strcat(imageCell{1,1}, '.jpg');
+end
+
+function imageNumber = GetImageNumber(imageName)
+    splitArray = strsplit(imageName, '.');
+    imageNumberCell = splitArray(1);
+    imageNumber = str2num(imageNumberCell{1,1});
 end
 
 function [trainedCoords] = GetTrainedCoordsForFile(fileName, nthFoldPath)

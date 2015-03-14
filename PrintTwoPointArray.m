@@ -17,7 +17,7 @@ function [] = PrintTwoPointArray( manualCoord, trainedCoord, imagePath )
     plot(trainXCoords,trainYCoords,'r.','MarkerSize',20);
     
     hold off;
-  %  pause(0.0001);
+    pause(0.00001);
     
 end
 

@@ -8,7 +8,7 @@ function [ areaDifference ] = CalculateAreaDifferenceBetweenCoordArray( manualCo
     trainedcartesienGridCoords = GetCartesienGridCoords(trainedPolarGridCoords);
     
     % For debug
-    PrintTwoPointArray( manualcartesienGridCoords, trainedcartesienGridCoords, imagePath );
+  %  PrintTwoPointArray( manualcartesienGridCoords, trainedcartesienGridCoords, imagePath );
     
     dimensions = size(manualPolarGridCoords);
     numberOfGrid = dimensions(2);

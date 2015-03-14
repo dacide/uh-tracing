@@ -7,7 +7,7 @@ function IterativeLearning()
     speakerSubjectMatrix = [1 8; 9 17];     % egy sor tartalmazza az n. speaker kezdõ és vég subject számát                  %REWRITE    
     SystemFolder = FolderSystem(baseFolderPath, numberOfSubjects, numberOfSpeakers, speakerSubjectMatrix);   
     selectedSpeakerNumber = 2;  % Kiválasztott beszélõ száma. Egyszerre több is szerepelhet a rendszerben, de a kiválasztás után a többivel nem foglalkozunk.     %REWRITE
-    ColdStartTrainingData = [9,10]; % Elsõ ciklusban tanításhoz felhasznált subjectek számai         %REWRITE
+    ColdStartTrainingData = [9]; % Elsõ ciklusban tanításhoz felhasznált subjectek számai         %REWRITE
     SubjectsPercentageForTraining = 80;              %REWRITE
     
     %---------INIT ErrorLog File----------%
@@ -30,6 +30,7 @@ function IterativeLearning()
     
     for iteration = 1 : iterationNumber+1      
         %Create model, do testData trace
+        disp(sprintf(strcat('Iteration: ',num2str(iteration),'\n')));
         PreparationForErrorEval( SystemFolder, TrainData, TestData, iteration);
                
         if iteration == 1
@@ -101,7 +102,7 @@ function plusTrainerSubject = IterateOnTestSubjects(SystemFolder, TestData, iter
     
     for subjectNumber = 1 : size(TestData,2)
        SelectedSubject = TestData(subjectNumber);
-       disp(strcat('Examined subject: ',num2str(SelectedSubject)));
+       disp(sprintf(strcat('\n','Examined subject: ',num2str(SelectedSubject))));
        
        %RMSE subj
        [RMSE_AVERAGE, rmseArray] = RunErrorEvaluation( SystemFolder,0, 1, SelectedSubject);

@@ -17,7 +17,7 @@ function PreparationForErrorEval( SystemFolder, trainArray, testArray, cycleNumb
     
     %1 because the RunErrorEvaluation only supports nfold cross
     %validation. 1 means the first fold. It uses a side effect of the nfold
-    %code. Because of this, we have to delete CrossValidationTestImages.
+    %code. Because of this, we have to delete CrossValidationTestImages *DeleteCrossValidationTestImages( SystemFolder );*.
     ReplaceTestImages(SystemFolder, 1);
         
     ReplaceNeuralModel(SystemFolder, cycleNumber, NeuralModelFolderPath);

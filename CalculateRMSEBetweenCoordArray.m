@@ -7,7 +7,7 @@ function [ RMSE ] = CalculateRMSEBetweenCoordArray( manualCoords, trainedCoords,
     manualcartesienGridCoords = GetCartesienGridCoords(manualPolarGridCoords);
     trainedcartesienGridCoords = GetCartesienGridCoords(trainedPolarGridCoords);
     
-    PrintTwoPointArray( manualcartesienGridCoords, trainedcartesienGridCoords, imagePath );
+   % PrintTwoPointArray( manualcartesienGridCoords, trainedcartesienGridCoords, imagePath );
     
     dimensions = size(manualPolarGridCoords);
     numberOfGrid = dimensions(2);
