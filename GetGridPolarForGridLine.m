@@ -80,25 +80,31 @@ function [boolean] = ShouldUsePointToBeCoord(polarCoord, gridAngle)
 end
 
 function [closerPoint, otherPoint, coordWeigth] = GetCloserCoordToGridAngle(pointA, pointB, gridAngle)
-    diff1 = abs(pointA(2)-gridAngle);
-    diff2 = abs(pointB(2)-gridAngle);
-    if diff2 ~= 0
-        ratio = diff1/diff2;
-        if ratio > 1
-            GaussX = 1/ratio;
+    diffA_gridAngle = abs(pointA(2)-gridAngle);
+    diffB_gridAngle = abs(pointB(2)-gridAngle);
+    if diffB_gridAngle ~= 0
+        if diffA_gridAngle ~=0
+            ratio = diffA_gridAngle/diffB_gridAngle;
+            if ratio > 1
+                GaussX = 1/ratio;
+            else
+                GaussX = ratio;
+            end
+            coordWeigth = gaussmf(GaussX,[0.85 0]);
+            % if coordWeigth < 1 pointA is nearer;  if coordWeight > 1 pointB is
+            % nearer
+            if ratio <= 1
+                closerPoint = pointA;
+                otherPoint = pointB;
+            elseif ratio > 1
+                closerPoint = pointB;
+                otherPoint = pointA;
+            end 
         else
-            GaussX = ratio;
-        end
-        coordWeigth = gaussmf(GaussX,[0.85 0]);
-        % if coordWeigth < 1 pointA is nearer;  if coordWeight > 1 pointB is
-        % nearer
-        if ratio <= 1
             closerPoint = pointA;
             otherPoint = pointB;
-        elseif ratio > 1
-            closerPoint = pointB;
-            otherPoint = pointA;
-        end 
+            coordWeigth = 1;
+        end      
     else
         closerPoint = pointB;
         otherPoint = pointA;

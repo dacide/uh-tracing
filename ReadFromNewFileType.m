@@ -10,7 +10,7 @@ function [ allImageCoord, startImageIndex, endImageIndex, ROICoords ] = ReadFrom
         imagePoints = us.frames(i);        
         xCoord = imagePoints.x;
         yCoord = imagePoints.y;
-        [simpleArray] = SimpifyArray(xCoord, yCoord);
+        [simpleArray] = MergeSameXcoords(xCoord, yCoord);
         simpleArrayLength = length(simpleArray);
         for j = 1 : simpleArrayLength
             allImageCoord(1,j,i) = simpleArray(1,j);
@@ -24,7 +24,7 @@ function [ allImageCoord, startImageIndex, endImageIndex, ROICoords ] = ReadFrom
     
 end
 
-function [simpleArray] = SimpifyArray(xCoord, yCoord)
+function [simpleArray] = MergeSameXcoords(xCoord, yCoord)
     sortedX = sort(xCoord);
     unigueX = unique(round(sortedX));
     simplifyLength = length(unigueX);
