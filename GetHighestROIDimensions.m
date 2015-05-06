@@ -1,6 +1,16 @@
 function [ maxROICoords ] = GetHighestROIDimensions( SystemFolder )
     numberOfROIFiles = SystemFolder.GetNumberOfSubject();
-    maxROICoords = [1000, 0, 1000, 0];
+    
+  %  speakersSubjMatrix = SystemFolder.GetSpeakerSubjectMatrix();
+  %  speakerSubjMatrix = speakersSubjMatrix(selectedSpeaker,:);
+  %  subjects = [speakerSubjMatrix(1):speakerSubjMatrix(2)];
+  %  numberOfROIFiles = length(subjects);
+    
+    trainerSubjectFolderPath  = SystemFolder.GetTrainerSubjectFolderPath(1);
+    ROIFilePath = strcat(trainerSubjectFolderPath, '\', 'ROI_config.txt');
+    maxROICoords = ReadROIFile( ROIFilePath );
+    
+ %   maxROICoords = [1000, 0, 1000, 0];
     for i = 1 : numberOfROIFiles
        trainerSubjectFolderPath  = SystemFolder.GetTrainerSubjectFolderPath(i);
        ROIFilePath = strcat(trainerSubjectFolderPath, '\', 'ROI_config.txt');

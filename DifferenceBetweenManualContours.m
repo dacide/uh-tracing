@@ -1,16 +1,18 @@
-function [ averageError ] = DifferenceBetweenManualContours(  )
+function [ averageRMSE, averageErrorAREA, averageErrorTER ] = DifferenceBetweenManualContours(  )
     % beolvasni a saját csv-t
     % beolvasni másik kontúrt
     
-    firstManualContourPath = 'C:\ubuntueswin\NEWDATA\TSFILES\SML\1\ts_1.csv';
-    secondManualContourPath = 'C:\ubuntueswin\FolderSystem\sumCSV\Subject_1.csv';
+    firstManualContourPath = 'C:\ubuntueswin\NEWDATA\TSFILES\SML\6\ts_1.csv';
+    secondManualContourPath = 'C:\ubuntueswin\FolderSystem\sumCSV\Subject_6.csv';
     
-    imageBasePath = 'C:\ubuntueswin\FolderSystem\convertedImages\Subject1';
+    imageBasePath = 'C:\ubuntueswin\FolderSystem\convertedImages\Subject6';
     
     [allFirstSentenceCoords] = ReadOneCSV(firstManualContourPath);
     [allSecondSentenceCoords] = ReadOneCSV(secondManualContourPath);
     
-    sumError = 0;
+    sumrmse = 0;
+    sumarea = 0;
+    sumter = 0;
     
     if size(allFirstSentenceCoords,3) ~= size(allSecondSentenceCoords,3)
         disp('FUUUUU');
@@ -21,14 +23,19 @@ function [ averageError ] = DifferenceBetweenManualContours(  )
         imagePath = strcat(imageBasePath,'\',imageNumber,'.jpg');
         firstSentenceCoords = allFirstSentenceCoords(:,:,i);
         secondSentenceCoords = allSecondSentenceCoords(:,:,i);
-        %error = CalculateRMSEBetweenCoordArray( firstSentenceCoords, secondSentenceCoords, imagePath );
-       %error = CalculateAreaDifferenceBetweenCoordArray( firstSentenceCoords, secondSentenceCoords, imagePath );
-        [ error] = CalculateTERBetweenCoordArray( firstSentenceCoords, secondSentenceCoords, imagePath );
-       sumError = sumError + error;
-        pause(0.2);
+        rmse = CalculateRMSEBetweenCoordArray( firstSentenceCoords, secondSentenceCoords, imagePath );
+       area = CalculateAreaDifferenceBetweenCoordArray( firstSentenceCoords, secondSentenceCoords, imagePath );
+       ter = CalculateTERBetweenCoordArray( firstSentenceCoords, secondSentenceCoords, imagePath );
+       sumrmse = sumrmse + rmse;
+       sumarea = sumarea + area;
+       sumter = sumter + ter;
+   %S     pause(0.2);
     end
     
-    averageError = sumError/size(allFirstSentenceCoords,3);
+    
+    averageRMSE = sumrmse/size(allFirstSentenceCoords,3);
+    averageErrorAREA = sumarea/size(allFirstSentenceCoords,3);
+    averageErrorTER = sumter/size(allFirstSentenceCoords,3);
     
     
 end

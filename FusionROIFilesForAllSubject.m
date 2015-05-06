@@ -1,4 +1,13 @@
-function [] = FusionROIFilesForAllSubject(FolderSystemObject)
+function [] = FusionROIFilesForAllSubject(varargin)
+    % 1. FolderSystemObject    2. selectedSpeakers  
+    if nargin == 1
+        FolderSystemObject = varargin{1};
+        selectedSpeakers = [1:FolderSystemObject.GetNumberOfSpeakers()];
+    elseif nargin == 2
+        FolderSystemObject = varargin{1};
+        selectedSpeakers = varargin{2};
+    end
+  %  subjectMatrixForRoi = FolderSystemObject.GetExtendedSpeakerSubjectMatrix(selectedSpeakers);
     subjectsFolderPath = FolderSystemObject.GetTsFilesFolderPath();
     %subjectsFolderPath = 'C:\ubuntueswin\networkSystem\tsfiles\';
     folderName = GetAllFolderName(subjectsFolderPath);
@@ -15,7 +24,12 @@ function [] = FusionROIFilesForOneSubject(FolderSystemObject, subjectNumber)
     %roiFolder = strcat(subjectsFolderPath, oneSubjectName, '\roi\');
     [fileNames] = GetAllFileName(roiFolder);
     fileNumber = length(fileNames);
-    extremeROI = [1000,0,1000,0];
+    
+    roiFileName = fileNames{1,1};
+    ROIFilePath = strcat(roiFolder, '\', roiFileName);
+    extremeROI = ReadROIFile( ROIFilePath );
+    
+ %   extremeROI = [1000,0,1000,0];
     for roiFileNumber = 1 : fileNumber
         roiFileName = fileNames{1,roiFileNumber};
         ROIFilePath = strcat(roiFolder, '\', roiFileName);

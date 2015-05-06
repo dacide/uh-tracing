@@ -57,7 +57,7 @@ function [strategyAverageError, errorArray] = GetErrorValueForModel(SystemFolder
      for i = 1 : length(testSubjectIds);
         selectedSubjectId = testSubjectIds(i);
         [foldAverageError, errorArray] = GetErrorValueForOneSubject(SystemFolder, selectedSubjectId, selectedStrategy);
-        disp(strcat('Average RMSE on full fold: ',num2str(foldAverageError)));
+        disp(strcat('Average RMSE-/ AREA on full fold: ',num2str(foldAverageError)));
         sumError = sumError + foldAverageError;
      end
      strategyAverageError = sumError/length(testSubjectIds);

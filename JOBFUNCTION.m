@@ -1,43 +1,76 @@
 function [] = JOBFUNCTION()
     
-    SystemFolder = FolderSystem('C:\ubuntueswin\FolderSystem', 17);
-
-    trainsml1 = [1,0,0,0,0,0,0];
-    trainsml2 = [1,2,0,0,0,0,0];
-    trainsml3 = [1,2,3,0,0,0,0];
-    trainsml4 = [1,2,3,4,0,0,0];
-    trainsml5 = [1,2,3,4,5,0,0];
-    trainsml6 = [1,2,3,4,5,6,0];
-    trainsml7 = [1,2,3,4,5,6,7];
-    testsml = [8];
-    trainsml = [trainsml1;trainsml2;trainsml3;trainsml4;trainsml5;trainsml6;...
-        trainsml7];
+     %--------INIT FILE SYSTEM----------%
+    numberOfSubjects = 57;                                      %REWRITE
+    baseFolderPath = 'C:\ubuntueswin\FolderSystem2';              %REWRITE
+    numberOfSpeakers = 2;                                         %REWRITE
+    speakerSubjectMatrix = [1 27; 28 57];     % egy sor tartalmazza az n. speaker kezdõ és vég subject számát                  %REWRITE    
+    SystemFolder = FolderSystem(baseFolderPath, numberOfSubjects, numberOfSpeakers, speakerSubjectMatrix);   
     
-    traincstg1 = [9,0,0,0,0,0,0,0];
-    traincstg2 = [9,10,0,0,0,0,0,0];
-    traincstg3 = [9,10,11,0,0,0,0,0];
-    traincstg4 = [9,10,11,12,0,0,0,0];
-    traincstg5 = [9,10,11,12,13,0,0,0];
-    traincstg6 = [9,10,11,12,13,14,0,0];
-    traincstg7 = [9,10,11,12,13,14,15,0];
-    traincstg8 = [9,10,11,12,13,14,15,16];
-    testcstg = [17];
-    traincstg = [traincstg1;traincstg2;traincstg3;traincstg4;traincstg5;traincstg6;...
-        traincstg7;traincstg8];
+    %---------INIT ErrorLog File----------%
+    fileHeader = GenerateErrorLogHeader();
+    errorValueLogName = sprintf('ErrorValue_%s.txt',datestr(now,'mm_dd_yyyy_HH_MM_SS'));
+    errorValueFilePath = strcat(SystemFolder.GetErrorValueLogPath(),'\',errorValueLogName);
+    errorValueFileId = fopen(errorValueFilePath,'w');
+    WriteRowToFile(errorValueFileId, fileHeader);
+    fclose(errorValueFileId);
+    
     
     %run SML
-  %  for i = 1 : 7
-        trainArray = GetClearArray(trainsml, 4);
-        RunNFoldCrossValidation(SystemFolder, 1, testsml,4);
-  %  end
+    for i = [1:3:14]
+        trainsml = [1:i];
+        testsml = [15:27];
+        [RMSE_MODEL_AVERAGE, AREA_MODEL_AVERAGE, TER_MODEL_AVERAGE] = RunNFoldCrossValidation(SystemFolder, trainsml, testsml, i);
+        
+        %Create and write to file the error row
+        errorValueRow = GenerateErrorValueRow(RMSE_MODEL_AVERAGE, AREA_MODEL_AVERAGE, TER_MODEL_AVERAGE, trainsml, i);
+        errorValueFileId = fopen(errorValueFilePath,'a');
+        WriteRowToFile(errorValueFileId, errorValueRow);
+        fclose(errorValueFileId);
+    end
+    
+    
+    %---------INIT ErrorLog File----------%
+    fileHeader = GenerateErrorLogHeader();
+    errorValueLogName = sprintf('ErrorValue_%s.txt',datestr(now,'mm_dd_yyyy_HH_MM_SS'));
+    errorValueFilePath = strcat(SystemFolder.GetErrorValueLogPath(),'\',errorValueLogName);
+    errorValueFileId = fopen(errorValueFilePath,'w');
+    WriteRowToFile(errorValueFileId, fileHeader);
+    fclose(errorValueFileId);
     
     %run CSTG
-  %  for i = 1 : 8
-  %      trainArray = GetClearArray(traincstg, i);
- %       RunNFoldCrossValidation(SystemFolder, trainArray, testcstg,(i+8));
-  %  end
+    for i = [1 :3: 14]
+        trainCSTG = [28:i+27];
+        testCSTG = [45:57];
+        [RMSE_MODEL_AVERAGE, AREA_MODEL_AVERAGE, TER_MODEL_AVERAGE] = RunNFoldCrossValidation(SystemFolder, trainCSTG, testCSTG,(i+8));
+        
+        %Create and write to file the error row
+        errorValueRow = GenerateErrorValueRow(RMSE_MODEL_AVERAGE, AREA_MODEL_AVERAGE, TER_MODEL_AVERAGE, trainCSTG, i+12);
+        errorValueFileId = fopen(errorValueFilePath,'a');
+        WriteRowToFile(errorValueFileId, errorValueRow);
+        fclose(errorValueFileId);
+    end
     
     
+end
+
+function row = GenerateErrorValueRow(RMSE, AREA, TER, BaseOrSelectedSubject, iterationNumber)
+    row = [cellstr(num2str(iterationNumber)), cellstr(num2str(RMSE)),...
+        cellstr(num2str(AREA)),cellstr(num2str(TER(1))), ...
+        cellstr(num2str(TER(2))), cellstr(num2str(TER(3))),...
+        cellstr(num2str(BaseOrSelectedSubject))];
+end
+
+function WriteRowToFile(fileId, fileRowData)
+    itemsNum = length(fileRowData);
+    for i = 1 : itemsNum
+        fprintf(fileId,['%s','\t'],fileRowData{1,i});
+    end
+    fprintf(fileId, '\n');
+end
+
+function fileHeader = GenerateErrorLogHeader()
+    fileHeader = {'Iteration(Model)', 'RMSE', 'AREA', 'INS', 'DEL', 'SUBS', 'PlusSubjId'};
 end
 
 function [clearArray] = GetClearArray(train, i)

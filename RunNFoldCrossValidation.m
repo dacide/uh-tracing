@@ -1,4 +1,4 @@
-function [] = RunNFoldCrossValidation(SystemFolder, trainArray, testArray,numberOfModelFolder)
+function [RMSE, AREA, TER] = RunNFoldCrossValidation(SystemFolder, trainArray, testArray,numberOfModelFolder)
 % megadni hogy hány fold cross validation
 % ez lesz a ciklusszám
 
@@ -12,7 +12,11 @@ function [] = RunNFoldCrossValidation(SystemFolder, trainArray, testArray,number
     %futtatni a kiértékelést és lementeni a végeredményt valahova.
     
    
-    
+    if trainArray[1] < 28
+        selectedSpeaker = 1;
+    else
+        selectedSpeaker = 2;
+    end
    % SystemFolder = FolderSystem('C:\ubuntueswin\FolderSystem', 4);
     NeuralModelFolderPath = 'C:\ubuntueswin\Autotrace-master\old\savefiles';
    % [strategyNumber, percentage, selectedSubjectNumber]= ChooseTestDatasetGetterStrategy(SystemFolder.numberOfSubjects);
@@ -40,18 +44,26 @@ function [] = RunNFoldCrossValidation(SystemFolder, trainArray, testArray,number
 
         fclose('all');
         
-        ReplaceTestImages(SystemFolder, foldNumber);
+        ReplaceTestImages(SystemFolder, numberOfModelFolder);
         
         ReplaceNeuralModel(SystemFolder, numberOfModelFolder, NeuralModelFolderPath);
         
         %----Get data for AutoTrace.m----
-        neuralModelNthFolderPath = SystemFolder.GetNeuralModelNthFolderPath(foldNumber);
-        networkFileName = StringPlusNumber('network', '.mat', foldNumber);
+        neuralModelNthFolderPath = SystemFolder.GetNeuralModelNthFolderPath(numberOfModelFolder);
+        networkFileName = StringPlusNumber('network', '.mat', numberOfModelFolder);
         networkFile = strcat(neuralModelNthFolderPath, '\', networkFileName);
         
-        directory = SystemFolder.GetCrossValNthFolderPath(foldNumber);
+        directory = SystemFolder.GetCrossValNthFolderPath(numberOfModelFolder);
         
+        disp('------------TRACING START---------')
         [xs, ys] = AutoTracer(directory, roi, networkFile);
+        disp('------------TRACING END---------')
+        % 2 - RMSE
+        % 4 - AREA
+        % 6 - TER
+        [RMSE, errorArray] = RunErrorEvaluation( SystemFolder, testArray, 2, 0 );
+         [AREA, errorArray] = RunErrorEvaluation( SystemFolder, testArray, 4, 0 );
+          [TER, errorArray] = RunErrorEvaluation( SystemFolder, testArray, 6, 0 );
 
     end
     

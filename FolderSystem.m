@@ -58,6 +58,20 @@ classdef FolderSystem
             speakerSubjectMatrix = obj.speakerSubjectMatrix;
         end
         
+        function speakerSubjectMatrix = GetExtendedSpeakerSubjectMatrix(obj, speakerNumber)
+            speakerSubjectMatrix = [];
+            if max(speakerNumber) <= obj.numberOfSpeakers
+                for i = 1:length(speakerNumber)
+                    speaker = speakerNumber(i);
+                    tempSubjMatrix = obj.speakerSubjectMatrix(speaker,:);
+                    tempSubjExtendedMatrix = [tempSubjMatrix(1):tempSubjMatrix(2)];
+                    speakerSubjectMatrix = [speakerSubjectMatrix, tempSubjExtendedMatrix];
+                end
+            else
+                speakerSubjectMatrix = 0;
+            end
+        end
+        
         function errorValueLogFolderPath = GetErrorValueLogPath(obj)
             baseFolderPathf = GetBaseFolderPath(obj);
             errorValueLogFolderPath = strcat(baseFolderPathf, '\', obj.errorValueLogFolderName);
